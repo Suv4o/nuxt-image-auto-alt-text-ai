@@ -9,8 +9,8 @@ export interface ModuleOptions {}
 
 export default defineNuxtModule<ModuleOptions>({
   meta: {
-    name: "nuxt-image-auto-alt-text-ai",
-    configKey: "nuxtImageAutoAltTextAi",
+    name: "nuxt-image-auto-alt-ai",
+    configKey: "nuxtImageAutoAltAi",
   },
   setup(options, nuxt) {
     // @ts-ignore
@@ -20,8 +20,8 @@ export default defineNuxtModule<ModuleOptions>({
     addServerPlugin(resolve("./runtime/server/render-html"));
 
     addComponent({
-      name: "ImageAltTextAi",
-      filePath: resolver.resolve("runtime/components/ImageAltTextAi.vue"),
+      name: "ImageAutoAlt",
+      filePath: resolver.resolve("runtime/components/ImageAutoAlt.vue"),
     });
   },
 });
