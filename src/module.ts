@@ -1,9 +1,4 @@
-import {
-  defineNuxtModule,
-  addComponent,
-  createResolver,
-  addServerPlugin,
-} from "@nuxt/kit";
+import { defineNuxtModule, createResolver, addServerPlugin } from "@nuxt/kit";
 
 export interface ModuleOptions {}
 
@@ -18,10 +13,5 @@ export default defineNuxtModule<ModuleOptions>({
     const { resolve } = resolver;
 
     addServerPlugin(resolve("./runtime/server/render-html"));
-
-    addComponent({
-      name: "ImageAutoAlt",
-      filePath: resolver.resolve("runtime/components/ImageAutoAlt.vue"),
-    });
   },
 });
