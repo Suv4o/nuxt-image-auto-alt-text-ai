@@ -28,6 +28,7 @@
     "test:watch": "vitest watch"
   },
   "dependencies": {
+    "@huggingface/inference": "^2.6.4",
     "@nuxt/kit": "^3.8.0",
     "jsdom": "^22.1.0"
   },
