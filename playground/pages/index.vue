@@ -2,6 +2,7 @@
 
 <template>
   <div>
+    <NuxtLink to="/about"> About </NuxtLink>
     <img class="test" src="https://source.unsplash.com/3tYZjGSBwbk" />
     <p>Aleks</p>
     <img src="https://source.unsplash.com/3tYZjGSBwbk" alt="" />

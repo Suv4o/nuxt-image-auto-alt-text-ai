@@ -25,7 +25,13 @@ function writeCachedImageAltText(data: { [key: string]: string }) {
   const dirname = pathname.slice(0, sliceToPosition);
 
   const filePath = path.join(dirname, ".img-alt-text-cache.json");
-  fs.writeFileSync(filePath, JSON.stringify(data), "utf-8");
+  if (!fs.existsSync(filePath)) {
+    fs.writeFileSync(filePath, JSON.stringify(data), "utf-8");
+  } else {
+    const cachedData = JSON.parse(fs.readFileSync(filePath, "utf-8"));
+    const newData = { ...cachedData, ...data };
+    fs.writeFileSync(filePath, JSON.stringify(newData), "utf-8");
+  }
 
   // Update .gitignore
   createOrUpdateGitignore(dirname);
