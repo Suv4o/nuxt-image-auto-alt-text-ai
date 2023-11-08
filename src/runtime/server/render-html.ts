@@ -5,6 +5,18 @@ import { JSDOM } from "jsdom";
 import * as hf from "@huggingface/inference";
 import type { NitroAppPlugin } from "nitropack";
 
+function createOrUpdateGitignore(dirname: string) {
+  const gitignorePath = path.join(dirname, ".gitignore");
+  if (!fs.existsSync(gitignorePath)) {
+    fs.writeFileSync(gitignorePath, ".img-alt-text-cache.json", "utf-8");
+  } else {
+    const gitignoreContent = fs.readFileSync(gitignorePath, "utf-8");
+    if (!gitignoreContent.includes(".img-alt-text-cache.json")) {
+      fs.appendFileSync(gitignorePath, "\n.img-alt-text-cache.json", "utf-8");
+    }
+  }
+}
+
 function writeCachedImageAltText(data: { [key: string]: string }) {
   const pathname = path
     // @ts-ignore
@@ -14,6 +26,9 @@ function writeCachedImageAltText(data: { [key: string]: string }) {
 
   const filePath = path.join(dirname, ".img-alt-text-cache.json");
   fs.writeFileSync(filePath, JSON.stringify(data), "utf-8");
+
+  // Update .gitignore
+  createOrUpdateGitignore(dirname);
 }
 
 function readCachedImageAltText() {
