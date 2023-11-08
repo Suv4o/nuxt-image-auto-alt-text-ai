@@ -1,9 +1,4 @@
-import {
-  defineNuxtModule,
-  createResolver,
-  addServerPlugin,
-  useNitro,
-} from "@nuxt/kit";
+import { defineNuxtModule, createResolver, addServerPlugin } from "@nuxt/kit";
 
 export interface ModuleOptions {}
 
@@ -12,7 +7,7 @@ export default defineNuxtModule<ModuleOptions>({
     name: "nuxt-image-auto-alt-ai",
     configKey: "nuxtImageAutoAltAi",
   },
-  setup(options, nuxt) {
+  setup(options) {
     // @ts-ignore
     const resolver = createResolver(import.meta.url);
     const { resolve } = resolver;

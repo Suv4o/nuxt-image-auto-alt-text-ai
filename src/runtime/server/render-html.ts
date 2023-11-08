@@ -49,14 +49,26 @@ function getImgAttributes(htmlString: string) {
       const attr = img.attributes[i];
       attributes[attr.name] = attr.value;
     }
-    const start = htmlString.indexOf("<img");
-    const end = htmlString.indexOf(">", start) + 1;
-    return { attributes, start, end };
+    return attributes;
   });
-  return imgAttributes;
+
+  const imgPositions = [];
+  const regex = /<img[^>]*>/g;
+  let match;
+  while ((match = regex.exec(htmlString)) !== null) {
+    imgPositions.push({
+      start: match.index,
+      end: match.index + match[0].length,
+    });
+  }
+
+  return imgAttributes.map((attributes, i) => ({
+    attributes,
+    ...imgPositions[i],
+  }));
 }
 
-async function urlToBlob(url) {
+async function urlToBlob(url: string) {
   const response = await fetch(url);
   const buffer = await response.blob();
   return buffer;
@@ -80,6 +92,7 @@ async function getImageCaptionFromApi(src: string) {
 
 async function prepareImageData(htmlString: string) {
   const imgAttributes = getImgAttributes(htmlString);
+
   const cachedImageAltText = readCachedImageAltText();
 
   const imgAttributesWithAlt = await Promise.all(
@@ -106,7 +119,7 @@ async function prepareImageData(htmlString: string) {
     })
   );
 
-  const result = imgAttributesWithAlt.filter((img) => img);
+  const result = imgAttributesWithAlt.filter((img) => img).reverse();
 
   return result;
 }
@@ -117,9 +130,27 @@ function generateHash(input: string) {
   return hash.digest("hex");
 }
 
+async function replaceImgTags(htmlString: string) {
+  const imagesData = await prepareImageData(htmlString);
+
+  const imagesToReplace = [];
+
+  for (const img of imagesData) {
+    imagesToReplace.push({
+      oldImg: htmlString.slice(img.start, img.end),
+      newImg: createImgTag(img.attributes),
+    });
+  }
+
+  for (const img of imagesToReplace) {
+    htmlString = htmlString.replace(img.oldImg, img.newImg);
+  }
+
+  return htmlString;
+}
+
 export default <NitroAppPlugin>function (nitroApp) {
   nitroApp.hooks.hook("render:response", async (response) => {
-    console.log(await prepareImageData(response.body));
-    // response.body = response.body.replaceAll("alt", `alt="NitroPack"`);
+    response.body = await replaceImgTags(response.body);
   });
 };

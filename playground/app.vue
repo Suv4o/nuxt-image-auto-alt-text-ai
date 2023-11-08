@@ -3,6 +3,7 @@
 <template>
   <div>
     <img class="test" src="https://source.unsplash.com/3tYZjGSBwbk" />
+    <p>Aleks</p>
     <img src="https://source.unsplash.com/3tYZjGSBwbk" alt="" />
     <img src="https://source.unsplash.com/3tYZjGSBwbk" alt class="test-2" />
     <img
