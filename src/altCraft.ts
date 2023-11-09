@@ -1,11 +1,16 @@
-import { defineNuxtModule, createResolver, addServerPlugin } from "@nuxt/kit";
+import {
+  defineNuxtModule,
+  createResolver,
+  addServerPlugin,
+  addPlugin,
+} from "@nuxt/kit";
 
 export interface ModuleOptions {}
 
 export default defineNuxtModule<ModuleOptions>({
   meta: {
-    name: "nuxt-image-auto-alt-ai",
-    configKey: "nuxtImageAutoAltAi",
+    name: "alt-craft",
+    configKey: "altCraft",
   },
   setup(options) {
     // @ts-ignore
@@ -17,6 +22,8 @@ export default defineNuxtModule<ModuleOptions>({
       // @ts-ignore
       import.meta.env[key] = value;
     });
+
+    addPlugin(resolve("./runtime/client/render-html"));
 
     addServerPlugin(resolve("./runtime/server/render-html"));
   },

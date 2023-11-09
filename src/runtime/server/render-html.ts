@@ -8,11 +8,11 @@ import type { NitroAppPlugin } from "nitropack";
 function createOrUpdateGitignore(dirname: string) {
   const gitignorePath = path.join(dirname, ".gitignore");
   if (!fs.existsSync(gitignorePath)) {
-    fs.writeFileSync(gitignorePath, ".img-alt-text-cache.json", "utf-8");
+    fs.writeFileSync(gitignorePath, ".alt-craft-cache.json", "utf-8");
   } else {
     const gitignoreContent = fs.readFileSync(gitignorePath, "utf-8");
-    if (!gitignoreContent.includes(".img-alt-text-cache.json")) {
-      fs.appendFileSync(gitignorePath, "\n.img-alt-text-cache.json", "utf-8");
+    if (!gitignoreContent.includes(".alt-craft-cache.json")) {
+      fs.appendFileSync(gitignorePath, "\n.alt-craft-cache.json", "utf-8");
     }
   }
 }
@@ -24,7 +24,7 @@ function writeCachedImageAltText(data: { [key: string]: string }) {
   const sliceToPosition = pathname.indexOf(".nuxt");
   const dirname = pathname.slice(0, sliceToPosition);
 
-  const filePath = path.join(dirname, ".img-alt-text-cache.json");
+  const filePath = path.join(dirname, ".alt-craft-cache.json");
   if (!fs.existsSync(filePath)) {
     fs.writeFileSync(filePath, JSON.stringify(data), "utf-8");
   } else {
@@ -44,7 +44,7 @@ function readCachedImageAltText() {
   const sliceToPosition = pathname.indexOf(".nuxt");
   const dirname = pathname.slice(0, sliceToPosition);
 
-  const filePath = path.join(dirname, ".img-alt-text-cache.json");
+  const filePath = path.join(dirname, ".alt-craft-cache.json");
   if (!fs.existsSync(filePath)) {
     fs.writeFileSync(filePath, JSON.stringify({}), "utf-8");
   }
