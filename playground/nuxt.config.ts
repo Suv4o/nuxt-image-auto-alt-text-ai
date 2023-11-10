@@ -3,6 +3,7 @@ export default defineNuxtConfig({
   altCraft: {
     modelName: "nlpconnect/vit-gpt2-image-captioning",
     accessToken: "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",
+    createGitIgnore: true,
   },
   devtools: { enabled: true },
 });

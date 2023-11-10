@@ -24,6 +24,10 @@ function writeCachedImageAltText(data: { [key: string]: string }) {
   const sliceToPosition = pathname.indexOf(".nuxt");
   const dirname = pathname.slice(0, sliceToPosition);
 
+  if (!fs.existsSync(dirname)) {
+    fs.mkdirSync(dirname);
+  }
+
   const filePath = path.join(dirname, ".alt-craft-cache.json");
   if (!fs.existsSync(filePath)) {
     fs.writeFileSync(filePath, JSON.stringify(data), "utf-8");
@@ -34,7 +38,10 @@ function writeCachedImageAltText(data: { [key: string]: string }) {
   }
 
   // Update .gitignore
-  createOrUpdateGitignore(dirname);
+  // @ts-ignore
+  if (import.meta.env.createGitIgnore) {
+    createOrUpdateGitignore(dirname);
+  }
 }
 
 function readCachedImageAltText() {
@@ -44,10 +51,16 @@ function readCachedImageAltText() {
   const sliceToPosition = pathname.indexOf(".nuxt");
   const dirname = pathname.slice(0, sliceToPosition);
 
+  if (!fs.existsSync(dirname)) {
+    fs.mkdirSync(dirname);
+  }
+
   const filePath = path.join(dirname, ".alt-craft-cache.json");
+
   if (!fs.existsSync(filePath)) {
     fs.writeFileSync(filePath, JSON.stringify({}), "utf-8");
   }
+
   const data = JSON.parse(fs.readFileSync(filePath, "utf-8"));
   return data;
 }
@@ -120,7 +133,7 @@ async function prepareImageData(htmlString: string) {
     imgAttributes.map(async ({ attributes, start, end }) => {
       const src = attributes?.src;
 
-      // We don;t want to process images that has no src attribute
+      // We don't want to process images that has no src attribute
       if (!src) {
         return;
       }
@@ -151,7 +164,42 @@ function generateHash(input: string) {
   return hash.digest("hex");
 }
 
+async function moveCacheFileFromDevToProd() {
+  const pathname = path
+    // @ts-ignore
+    .dirname(new URL(import.meta.url).pathname);
+  const sliceToThePreviousDirectory = pathname.indexOf(".output");
+  const sliceToPosition = pathname.indexOf(".nuxt");
+  const dirnameToPreviousDirectory = pathname.slice(
+    0,
+    sliceToThePreviousDirectory
+  );
+  const dirname = pathname.slice(0, sliceToPosition);
+
+  const oldPath = path.join(
+    dirnameToPreviousDirectory,
+    ".alt-craft-cache.json"
+  );
+  const newPath = path.join(dirname, ".alt-craft-cache.json");
+
+  if (!dirname.includes(".output") || newPath) {
+    return;
+  }
+
+  if (!fs.existsSync(dirname)) {
+    fs.mkdirSync(dirname);
+  }
+
+  if (!fs.existsSync(oldPath)) {
+    return;
+  }
+
+  fs.copyFileSync(oldPath, newPath);
+}
+
 async function replaceImgTags(htmlString: string) {
+  await moveCacheFileFromDevToProd();
+
   const imagesData = await prepareImageData(htmlString);
 
   const imagesToReplace = [];
