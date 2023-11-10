@@ -114,6 +114,7 @@ async function getImageCaptionFromApi(src: string) {
   const model = import.meta.env.modelName;
   // @ts-ignore
   const accessToken = import.meta.env.accessToken;
+
   // @ts-ignore
   const prompt = import.meta.env.prompt;
 
@@ -167,6 +168,13 @@ async function getImageCaptionFromApi(src: string) {
         },
       ],
     });
+
+    const message = response?.choices?.[0]?.message?.content;
+
+    if (!message) {
+      return "";
+    }
+
     return response?.choices?.[0]?.message?.content;
   }
 }
