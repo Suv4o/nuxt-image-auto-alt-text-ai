@@ -3,6 +3,7 @@ import * as path from "path";
 import * as crypto from "crypto";
 import { JSDOM } from "jsdom";
 import * as hf from "@huggingface/inference";
+import OpenAI from "openai";
 import type { NitroAppPlugin } from "nitropack";
 
 function createOrUpdateGitignore(dirname: string) {
@@ -109,19 +110,65 @@ async function urlToBlob(url: string) {
 }
 
 async function getImageCaptionFromApi(src: string) {
-  const { generated_text } = await hf.imageToText({
-    // @ts-ignore
-    accessToken: import.meta.env.accessToken,
-    data: await urlToBlob(src),
-    // @ts-ignore
-    model: import.meta.env.modelName,
-  });
+  // @ts-ignore
+  const model = import.meta.env.modelName;
+  // @ts-ignore
+  const accessToken = import.meta.env.accessToken;
+  // @ts-ignore
+  const prompt = import.meta.env.prompt;
 
-  if (!generated_text) {
-    return "";
+  let aiPlatform = null;
+
+  if (accessToken.includes("sk-")) {
+    aiPlatform = "OpenAI";
   }
 
-  return generated_text;
+  if (accessToken.includes("hf_")) {
+    aiPlatform = "HuggingFace";
+  }
+
+  if (!aiPlatform) {
+    throw new Error(
+      "Invalid access token. Please provide a valid access token."
+    );
+  }
+
+  if (aiPlatform === "HuggingFace") {
+    const { generated_text } = await hf.imageToText({
+      accessToken,
+      data: await urlToBlob(src),
+      model,
+    });
+
+    if (!generated_text) {
+      return "";
+    }
+
+    return generated_text;
+  }
+
+  if (aiPlatform === "OpenAI") {
+    const openai = new OpenAI({ apiKey: accessToken });
+
+    const response = await openai.chat.completions.create({
+      model,
+      messages: [
+        {
+          role: "user",
+          content: [
+            { type: "text", text: prompt },
+            {
+              type: "image_url",
+              image_url: {
+                url: src,
+              },
+            },
+          ],
+        },
+      ],
+    });
+    return response?.choices?.[0]?.message?.content;
+  }
 }
 
 async function prepareImageData(htmlString: string) {

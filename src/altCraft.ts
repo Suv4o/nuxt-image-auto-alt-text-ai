@@ -1,9 +1,4 @@
-import {
-  defineNuxtModule,
-  createResolver,
-  addServerPlugin,
-  // addPlugin,
-} from "@nuxt/kit";
+import { defineNuxtModule, createResolver, addServerPlugin } from "@nuxt/kit";
 
 export interface ModuleOptions {}
 
@@ -23,7 +18,6 @@ export default defineNuxtModule<ModuleOptions>({
       import.meta.env[key] = value;
     });
 
-    // addPlugin(resolve("./runtime/client/render-html"));
     addServerPlugin(resolve("./runtime/server/render-html"));
   },
 });
