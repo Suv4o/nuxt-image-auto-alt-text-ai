@@ -5,6 +5,8 @@ import { JSDOM } from "jsdom";
 import * as hf from "@huggingface/inference";
 import OpenAI from "openai";
 import type { NitroAppPlugin } from "nitropack";
+// @ts-ignore
+import { useRuntimeConfig } from "#imports";
 
 function createOrUpdateGitignore(dirname: string) {
   const gitignorePath = path.join(dirname, ".gitignore");
@@ -38,9 +40,12 @@ function writeCachedImageAltText(data: { [key: string]: string }) {
     fs.writeFileSync(filePath, JSON.stringify(newData), "utf-8");
   }
 
-  // Update .gitignore
+  // Crete or update .gitignore only in the project not in the build
   // @ts-ignore
-  if (import.meta.env.createGitIgnore) {
+  if (
+    useRuntimeConfig().altCraftOptions.createGitIgnore &&
+    !dirname.includes(".output")
+  ) {
     createOrUpdateGitignore(dirname);
   }
 }
@@ -110,72 +115,76 @@ async function urlToBlob(url: string) {
 }
 
 async function getImageCaptionFromApi(src: string) {
-  // @ts-ignore
-  const model = import.meta.env.modelName;
-  // @ts-ignore
-  const accessToken = import.meta.env.accessToken;
+  try {
+    // @ts-ignore
+    const model = useRuntimeConfig().altCraftOptions.modelName;
+    // @ts-ignore
+    const accessToken = useRuntimeConfig().altCraftOptions.accessToken;
 
-  // @ts-ignore
-  const prompt = import.meta.env.prompt;
+    // @ts-ignore
+    const prompt = useRuntimeConfig().altCraftOptions.prompt;
 
-  let aiPlatform = null;
+    let aiPlatform = null;
 
-  if (accessToken.includes("sk-")) {
-    aiPlatform = "OpenAI";
-  }
-
-  if (accessToken.includes("hf_")) {
-    aiPlatform = "HuggingFace";
-  }
-
-  if (!aiPlatform) {
-    throw new Error(
-      "Invalid access token. Please provide a valid access token."
-    );
-  }
-
-  if (aiPlatform === "HuggingFace") {
-    const { generated_text } = await hf.imageToText({
-      accessToken,
-      data: await urlToBlob(src),
-      model,
-    });
-
-    if (!generated_text) {
-      return "";
+    if (accessToken.includes("sk-")) {
+      aiPlatform = "OpenAI";
     }
 
-    return generated_text;
-  }
+    if (accessToken.includes("hf_")) {
+      aiPlatform = "HuggingFace";
+    }
 
-  if (aiPlatform === "OpenAI") {
-    const openai = new OpenAI({ apiKey: accessToken });
+    if (!aiPlatform) {
+      throw new Error(
+        "Invalid access token. Please provide a valid access token."
+      );
+    }
 
-    const response = await openai.chat.completions.create({
-      model,
-      messages: [
-        {
-          role: "user",
-          content: [
-            { type: "text", text: prompt },
-            {
-              type: "image_url",
-              image_url: {
-                url: src,
+    if (aiPlatform === "HuggingFace") {
+      const { generated_text } = await hf.imageToText({
+        accessToken,
+        data: await urlToBlob(src),
+        model,
+      });
+
+      if (!generated_text) {
+        return "";
+      }
+
+      return generated_text;
+    }
+
+    if (aiPlatform === "OpenAI") {
+      const openai = new OpenAI({ apiKey: accessToken });
+
+      const response = await openai.chat.completions.create({
+        model,
+        messages: [
+          {
+            role: "user",
+            content: [
+              { type: "text", text: prompt },
+              {
+                type: "image_url",
+                image_url: {
+                  url: src,
+                },
               },
-            },
-          ],
-        },
-      ],
-    });
+            ],
+          },
+        ],
+      });
 
-    const message = response?.choices?.[0]?.message?.content;
+      const message = response?.choices?.[0]?.message?.content;
 
-    if (!message) {
-      return "";
+      if (!message) {
+        return "";
+      }
+
+      return response?.choices?.[0]?.message?.content;
     }
-
-    return response?.choices?.[0]?.message?.content;
+  } catch (error) {
+    console.error(error);
   }
 }
 
@@ -237,7 +246,11 @@ async function moveCacheFileFromDevToProd() {
   );
   const newPath = path.join(dirname, ".alt-craft-cache.json");
 
-  if (!dirname.includes(".output") || newPath) {
+  if (!dirname.includes(".output")) {
+    return;
+  }
+
+  if (fs.existsSync(newPath)) {
     return;
   }
 
