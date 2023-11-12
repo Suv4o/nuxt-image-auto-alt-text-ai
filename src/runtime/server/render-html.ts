@@ -114,15 +114,14 @@ async function urlToBlob(url: string) {
   return buffer;
 }
 
-async function getImageCaptionFromApi(src: string) {
+async function getImageCaptionFromApi(imgUrl: string) {
   try {
-    // @ts-ignore
     const model = useRuntimeConfig().altCraftOptions.modelName;
-    // @ts-ignore
     const accessToken = useRuntimeConfig().altCraftOptions.accessToken;
-
-    // @ts-ignore
     const prompt = useRuntimeConfig().altCraftOptions.prompt;
+    const mainDomain = useRuntimeConfig().altCraftOptions.serveFrom ?? "";
+
+    const src = imgUrl.includes("http") ? imgUrl : mainDomain + imgUrl;
 
     let aiPlatform = null;
 

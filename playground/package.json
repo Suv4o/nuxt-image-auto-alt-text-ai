@@ -3,7 +3,7 @@
   "name": "my-module-playground",
   "type": "module",
   "scripts": {
-    "dev": "nuxi dev",
+    "dev": "NODE_TLS_REJECT_UNAUTHORIZED=0 nuxt dev --https --ssl-cert localhost.pem --ssl-key localhost-key.pem",
     "build": "nuxi build",
     "generate": "nuxi generate",
     "preview": "nuxt preview"
