@@ -14,7 +14,9 @@ export default defineNuxtModule<ModuleOptions>({
 
     // Assign options to nuxt config as private so we can access them in the nitro plugin
     nuxt.hook("nitro:config", async (nitroConfig) => {
-      nitroConfig.runtimeConfig["altCraftOptions"] = options;
+      if (nitroConfig.runtimeConfig) {
+        nitroConfig.runtimeConfig["altCraftOptions"] = options;
+      }
     });
 
     addServerPlugin(resolve("./runtime/server/render-html"));
