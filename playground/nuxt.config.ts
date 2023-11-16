@@ -1,5 +1,5 @@
 export default defineNuxtConfig({
-  modules: ["../src/altCraft"],
+  modules: ["../src/module"],
   altCraft: {
     modelName: process.env.MODEL_NAME,
     accessToken: process.env.ACCESS_TOKEN,
